@@ -104,7 +104,7 @@ void loop()
     float target_position = 0.;
     m0_current = pd_control(m0_pos, m0_vel, target_position, Kp, Kd);
 
-    // Step 4. Uncomment for bang-bang control
+    // Step 4. Uncomment for bang-bang control. Comment out again before Step 5.
     // if(m0_pos < 0) {
     //   m0_current = 800;
     // } else {
