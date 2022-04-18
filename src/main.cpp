@@ -87,6 +87,7 @@ void loop()
 
   if (now - last_command >= LOOP_DELAY_MILLIS)
   {
+    // TODO Actuator ID indices start at 1, not 0
     float m0_pos = bus.Get(0).Position(); // Get the shaft position of motor 0 in radians.
     float m0_vel = bus.Get(0).Velocity(); // Get the shaft velocity of motor 0 in radians/sec.
     Serial.print("m0_pos: ");
@@ -118,10 +119,13 @@ void loop()
     // Step 10. Program periodic motion for all three motors.
 
     // Step 9. Program PID control for the two other motors.
+    // Right bottom, middle, top, respectively
     float m1_pos = bus.Get(1).Position();
     float m1_vel = bus.Get(1).Velocity();
     float m2_pos = bus.Get(2).Position();
     float m2_vel = bus.Get(2).Velocity();
+    float m3_pos = bus.Get(3).Position();
+    float m3_vel = bus.Get(3).Velocity();
     Serial.print("\tm1_pos: ");
     Serial.print(m1_pos);
     Serial.print("\tm1_vel: ");
@@ -130,13 +134,44 @@ void loop()
     Serial.print(m2_pos);
     Serial.print("\tm2_vel: ");
     Serial.print(m2_vel);
+    Serial.print("\tm3_pos: ");
+    Serial.print(m3_pos);
+    Serial.print("\tm3_vel: ");
+    Serial.print(m3_vel);
+
+    // Left bottom, middle, top, respectively
+    float m4_pos = bus.Get(4).Position();
+    float m4_vel = bus.Get(4).Velocity();
+    float m5_pos = bus.Get(5).Position();
+    float m5_vel = bus.Get(5).Velocity();
+    float m6_pos = bus.Get(6).Position();
+    float m6_vel = bus.Get(6).Velocity();
+    Serial.print("\tm4_pos: ");
+    Serial.print(m4_pos);
+    Serial.print("\tm4_vel: ");
+    Serial.print(m4_vel);
+    Serial.print("\tm5_pos: ");
+    Serial.print(m5_pos);
+    Serial.print("\tm5_vel: ");
+    Serial.print(m5_vel);
+    Serial.print("\tm6_pos: ");
+    Serial.print(m6_pos);
+    Serial.print("\tm6_vel: ");
+    Serial.print(m6_vel);
     // m1_current = YOUR PID CODE
     // m2_current = YOUR PID CODE
+
+
 
     // Sanitizes your computed current commands to make the robot safer.
     sanitize_current_command(m0_current, m0_pos, m0_vel);
     sanitize_current_command(m1_current, m1_pos, m1_vel);
     sanitize_current_command(m2_current, m2_pos, m2_vel);
+
+    sanitize_current_command(m3_current, m3_pos, m3_vel);
+    sanitize_current_command(m4_current, m4_pos, m4_vel);
+    sanitize_current_command(m5_current, m5_pos, m5_vel);
+
     // Only call CommandTorques once per loop! Calling it multiple times will override the last command.
     bus.CommandTorques(m0_current, m1_current, m2_current, 0, C610Subbus::kIDZeroToThree);
     // Once you motors with ID=4 to 7, use this command
