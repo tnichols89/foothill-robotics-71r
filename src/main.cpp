@@ -1,6 +1,8 @@
 #include "Arduino.h"
 #include "C610Bus.h"
 
+#include <vector>
+
 long last_command = 0; // To keep track of when we last commanded the motors
 C610Bus<CAN2> bus;     // Initialize the Teensy's CAN bus to talk to the motors
 
@@ -8,6 +10,19 @@ const int LOOP_DELAY_MILLIS = 5; // Wait for 0.005s between motor updates.
 
 const float m1_offset = 0.0;
 const float m2_offset = 0.0;
+
+const std::vector<ActuatorController> controllers;
+
+class ActuatorController {
+  public:
+    float position, velocity, current;
+
+    ActuatorController (float position = 0.0, float velocity = 0.0, float current = 0.0) {
+      this->position = position;
+      this->velocity = velocity;
+      this->current = current;
+    }
+};
 
 // Step 5. Implement your own PD controller here.
 float pd_control(float pos,
@@ -59,6 +74,7 @@ void setup()
     if (c == 's')
     {
       Serial.println("Starting code.");
+      /* TODO Instantiate ActuatorController for each controller and push_back to vector */
       break;
     }
     if (millis() - last_print > 2000) {
@@ -88,16 +104,33 @@ void loop()
   if (now - last_command >= LOOP_DELAY_MILLIS)
   {
     // TODO Actuator ID indices start at 1, not 0
-    float m0_pos = bus.Get(0).Position(); // Get the shaft position of motor 0 in radians.
-    float m0_vel = bus.Get(0).Velocity(); // Get the shaft velocity of motor 0 in radians/sec.
-    Serial.print("m0_pos: ");
-    Serial.print(m0_pos);
-    Serial.print("\tm0_vel: ");
-    Serial.print(m0_vel);
-
-    float m0_current = 0.0;
+    float m1_pos = bus.Get(1).Position(); // Get the shaft position of motor 0 in radians.
+    float m1_vel = bus.Get(1).Velocity(); // Get the shaft velocity of motor 0 in radians/sec.
     float m1_current = 0.0;
+    Serial.print("m1_pos: ");
+    Serial.print(m1_pos);
+    Serial.print("\tm1_vel: ");
+    Serial.print(m1_vel);
+
+    float m2_pos = bus.Get(2).Position(); // Get the shaft position of motor 0 in radians.
+    float m2_vel = bus.Get(2).Velocity(); // Get the shaft velocity of motor 0 in radians/sec.
     float m2_current = 0.0;
+
+    float m3_pos = bus.Get(3).Position(); // Get the shaft position of motor 0 in radians.
+    float m3_vel = bus.Get(3).Velocity(); // Get the shaft velocity of motor 0 in radians/sec.
+    float m3_current = 0.0;
+
+    float m4_pos = bus.Get(4).Position(); // Get the shaft position of motor 0 in radians.
+    float m4_vel = bus.Get(4).Velocity(); // Get the shaft velocity of motor 0 in radians/sec.
+    float m4_current = 0.0;
+
+    float m5_pos = bus.Get(5).Position(); // Get the shaft position of motor 0 in radians.
+    float m5_vel = bus.Get(5).Velocity(); // Get the shaft velocity of motor 0 in radians/sec.
+    float m5_current = 0.0;
+
+    float m6_pos = bus.Get(6).Position(); // Get the shaft position of motor 0 in radians.
+    float m6_vel = bus.Get(6).Velocity(); // Get the shaft velocity of motor 0 in radians/sec.
+    float m6_current = 0.0;
 
 
     // Step 8. Change the target position to something periodic
@@ -107,7 +140,7 @@ void loop()
     float Kp = 1000.0;
     float Kd = 0;
     float target_position = 0.0; // modify in step 8
-    m0_current = pd_control(m0_pos, m0_vel, target_position, Kp, Kd);
+    m1_current = pd_control(m1_pos, m1_vel, target_position, Kp, Kd);
 
     // Step 4. Uncomment for bang-bang control. Comment out again before Step 5.
     // if(m0_pos < 0) {
@@ -161,19 +194,17 @@ void loop()
     // m1_current = YOUR PID CODE
     // m2_current = YOUR PID CODE
 
-
-
     // Sanitizes your computed current commands to make the robot safer.
-    sanitize_current_command(m0_current, m0_pos, m0_vel);
     sanitize_current_command(m1_current, m1_pos, m1_vel);
     sanitize_current_command(m2_current, m2_pos, m2_vel);
-
     sanitize_current_command(m3_current, m3_pos, m3_vel);
+    
     sanitize_current_command(m4_current, m4_pos, m4_vel);
     sanitize_current_command(m5_current, m5_pos, m5_vel);
+    sanitize_current_command(m6_current, m6_pos, m6_vel);
 
     // Only call CommandTorques once per loop! Calling it multiple times will override the last command.
-    bus.CommandTorques(m0_current, m1_current, m2_current, 0, C610Subbus::kIDZeroToThree);
+    bus.CommandTorques(m1_current, m1_current, m1_current, 0, C610Subbus::kIDZeroToThree);
     // Once you motors with ID=4 to 7, use this command
     // bus.CommandTorques(0, 0, 0, 0, C610Subbus::kIDFourToSeven);
 
