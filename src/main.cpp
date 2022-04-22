@@ -103,6 +103,7 @@ void loop() {
   if (Serial.available()) {
     if (Serial.read() == 's') {
       bus.CommandTorques(0, 0, 0, 0, C610Subbus::kIDZeroToThree);
+      bus.CommandTorques(0, 0, 0, 0, C610Subbus::kIDFourToSeven);  // Safety first kids!
       Serial.println("Stopping.");
       while (true) {
       }
