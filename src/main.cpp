@@ -45,7 +45,9 @@ Logs info for IDs from lower to upper, inclusive
 */
 void logInfo(int lower, int upper) {
   for (int i = lower; i <= upper; i++) {
-    Serial.print("m1_pos: ");
+    Serial.print("m");
+    Serial.print(i);
+    Serial.print("_pos: ");
     Serial.print(bus.Get(i).Position());
     Serial.print("\tm1_vel: ");
     Serial.print(bus.Get(i).Velocity());
