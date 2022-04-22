@@ -11,19 +11,6 @@ const int LOOP_DELAY_MILLIS = 5;  // Wait for 0.005s between motor updates.
 const float m1_offset = 0.0;
 const float m2_offset = 0.0;
 
-const std::vector<ActuatorController> controllers;
-
-class ActuatorController {
- public:
-  float position, velocity, current;
-
-  ActuatorController(float position = 0.0, float velocity = 0.0, float current = 0.0) {
-    this->position = position;
-    this->velocity = velocity;
-    this->current = current;
-  }
-};
-
 // Step 5. Implement your own PD controller here.
 float pd_control(float pos,
                  float vel,
@@ -32,24 +19,19 @@ float pd_control(float pos,
                  float Kd) {
   return (-Kp * (pos - target)) + (-Kd * vel);
 }
-/*
-Gets the sanitized current for a given motor ID
-*/
-float get_current(int id, float target, float Kp = 1000.0, float Kd = 500.0) {
-  float current = (-Kp * (bus.Get(id).Position() - target)) + (-Kd * bus.Get(id).Velocity());
-  sanitize_current_command(current, bus.Get(id).Position(), bus.Get(id).Velocity());
-  return current;
-}
+
 /*
 Logs info for IDs from lower to upper, inclusive
 */
 void logInfo(int lower, int upper) {
   for (int i = lower; i <= upper; i++) {
-    Serial.print("m");
+    Serial.print("\tm");
     Serial.print(i);
     Serial.print("_pos: ");
     Serial.print(bus.Get(i).Position());
-    Serial.print("\tm1_vel: ");
+    Serial.print("\tm");
+    Serial.print(i);
+    Serial.print("_vel: ");
     Serial.print(bus.Get(i).Velocity());
   }
 }
@@ -75,6 +57,15 @@ void sanitize_current_command(float &command,
     command = 0;
     Serial.println("ERROR: Actuactor velocity outside of allowed bounds. Setting torque to 0.");
   }
+}
+
+/*
+Gets the sanitized current for a given motor ID
+*/
+float get_current(int id, float target, float Kp = 2000.0, float Kd = 100.0) {
+  float current = (-Kp * (bus.Get(id).Position() - target)) + (-Kd * bus.Get(id).Velocity());
+  sanitize_current_command(current, bus.Get(id).Position(), bus.Get(id).Velocity());
+  return current;
 }
 
 // This code waits for the user to type s before executing code.
@@ -113,16 +104,24 @@ void loop() {
   }
 
   if (now - last_command >= LOOP_DELAY_MILLIS) {
-    logInfo(1, 6);
+    // logInfo(1, 6);
 
+    float current3 = get_current(3, bus.Get(0).Position());
+    Serial.print(bus.Get(1).Position());
+    // Serial.print(current4);
+    Serial.print("\t");
     float current4 = get_current(4, bus.Get(1).Position());
+    Serial.print(bus.Get(2).Position());
+    // Serial.print(current5);
+    Serial.print("\t");
     float current5 = get_current(5, bus.Get(2).Position());
-    float current6 = get_current(6, bus.Get(3).Position());
+    Serial.print(bus.Get(3).Position());
+    // Serial.print(current6);
 
     // Only call CommandTorques once per loop! Calling it multiple times will override the last command.
-    bus.CommandTorques(0, 0, 0, 0, C610Subbus::kIDZeroToThree);
+    bus.CommandTorques(0, 0, 0, current3, C610Subbus::kIDZeroToThree);
     // Once you motors with ID=4 to 7, use this command
-    bus.CommandTorques(current4, current5, current6, 0, C610Subbus::kIDFourToSeven);
+    bus.CommandTorques(current4, current5, 0, 0, C610Subbus::kIDFourToSeven);
 
     last_command = now;
     Serial.println();
